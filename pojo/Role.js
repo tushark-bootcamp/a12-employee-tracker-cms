@@ -6,6 +6,10 @@ class Role {
         this.department = department;
     }
 
+    setId(id) {
+        this.id = id;
+    }
+
     getId() {
         return this.id;
     }

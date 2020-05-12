@@ -4,6 +4,10 @@ class Department {
         this.name = name;
     }
 
+    setId(id) {
+        this.id = id;
+    }
+
     getId() {
         return this.id;
     }

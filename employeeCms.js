@@ -1,27 +1,12 @@
-var mysql = require("mysql");
+var employeeData = require("./data/employeeData");
+const Department = require("./pojo/Department");
+const Employee = require("./pojo/Employee");
+const Role = require("./pojo/Role");
+
 var inquirer = require("inquirer");
 
-// create the connection information for the sql database
-var connection = mysql.createConnection({
-    host: "localhost",
-
-    // Your port; if not 3306
-    port: 3306,
-
-    // Your username
-    user: "root",
-
-    // Your password
-    password: "app_pass01",
-    database: "employee_cms_DB"
-});
-
-// connect to the mysql server and sql database
-connection.connect(function (err) {
-    if (err) throw err;
-    // run the start function after the connection is made to prompt the user
-    start();
-});
+start();
+console.log("past)")
 
 // function which prompts the user for what action they should take
 function start() {
@@ -65,12 +50,15 @@ function start() {
                 viewDeptBudget();
             }
             else {
-                connection.end();
+                employeeData.exit();
+                console.log("End");
+                //shouldContinue = false;
+            
             }
         });
 }
 
-function addRecords() {
+async function addRecords() {
     inquirer
         .prompt({
             name: "addRecords",
@@ -106,15 +94,12 @@ function addNewDepartment() {
             message: "Please enter the name of new department"
         })
         .then(function (answer) {
-            var department = answer.departmentName;
-            addDepartmentInDB(department);
+            var department = new Department("", answer.departmentName);
+            employeeData.addDepartmentInDB(department);
             start();
         });
 }
 
-function addDepartmentInDB(department) {
-
-}
 
 function createNewRole() {
     inquirer
@@ -133,13 +118,10 @@ function createNewRole() {
                 name: "department",
                 type: "list",
                 message: "Which of the below departments would like to add this role in?",
-                getDepartmentList();
+                choices: getDepartmentList()
             })
         .then(function (answer) {
-            var roleName = answer.newRoleName;
-            var salary = answer.salary;
-            var department = answer.department;
-            addDepartmentInDB(roleName, salary, department);
+            addDepartmentInDB(answer.newRoleName, answer.salary, answer.department);
             viewDepartments();
             start();
         });
@@ -171,7 +153,7 @@ function addEmployees() {
                 name: "role",
                 type: "list",
                 message: "Which of the below roles would like to assign for this employee?",
-                getRoleList();
+                choices: getRoleList()
             })
         .then(function (answer) {
             var name = answer.name;
@@ -256,13 +238,13 @@ function updateEmployeeRoles() {
                 name: "employee",
                 type: "list",
                 message: "Which of the below employee's role would like to update?",
-                getEmployeeList();
+                choices: getEmployeeList()
             },
             {
                 name: "role",
                 type: "list",
                 message: "Which of the below roles would like to assign for this employee?",
-                getRoleList();
+                choices: getRoleList()
             })
         .then(function (answer) {
             var employee = answer.employee;
@@ -272,6 +254,7 @@ function updateEmployeeRoles() {
         });
 }
 
-function updateEmployeeRoleInDB(employee, role) {}
+function updateEmployeeRoleInDB(employee, role) { }
 
 
+console.log("EOF")

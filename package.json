@@ -1,11 +1,10 @@
 {
-    "name": "employee-cms",
-    "version": "1.0.0",
-    "description": "Employee CMS app using inquirer and mysql",
-    "main": "employeeCMS.js",
-    "dependencies": {
-      "inquirer": "^6.2.1",
-      "mysql": "^2.16.0"
-    }
+  "name": "employee-cms",
+  "version": "1.0.0",
+  "description": "Employee CMS app using inquirer and mysql",
+  "main": "employeeCMS.js",
+  "dependencies": {
+    "inquirer": "^6.2.1",
+    "mysql": "^2.16.0"
   }
-  
+}

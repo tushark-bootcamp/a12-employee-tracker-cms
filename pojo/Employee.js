@@ -7,6 +7,10 @@ class Employee {
         this.manager = manager;
     }
 
+    setId(id) {
+        this.id = id;
+    }
+
     getId() {
         return this.id;
     }
