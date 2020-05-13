@@ -1,3 +1,5 @@
+const Department = require("./Department");
+
 class Role {
     constructor(id, title, salary, department) {
         this.id = id;

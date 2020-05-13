@@ -6,7 +6,6 @@ const Role = require("./pojo/Role");
 var inquirer = require("inquirer");
 
 start();
-console.log("past)")
 
 // function which prompts the user for what action they should take
 function start() {
@@ -52,8 +51,6 @@ function start() {
             else {
                 employeeData.exit();
                 console.log("End");
-                //shouldContinue = false;
-            
             }
         });
 }
@@ -63,7 +60,7 @@ async function addRecords() {
         .prompt({
             name: "addRecords",
             type: "list",
-            message: "Which of the below add functions would you like to perform?",
+            message: "Which of the below functions would you like to perform?",
             choices: [
                 "Add department",
                 "Add roles",
@@ -102,8 +99,9 @@ function addNewDepartment() {
 
 
 function createNewRole() {
+    var deptList = getDepartmentList();
     inquirer
-        .prompt(
+        .prompt([
             {
                 name: "newRoleName",
                 type: "input",
@@ -118,22 +116,42 @@ function createNewRole() {
                 name: "department",
                 type: "list",
                 message: "Which of the below departments would like to add this role in?",
-                choices: getDepartmentList()
-            })
-        .then(function (answer) {
-            addDepartmentInDB(answer.newRoleName, answer.salary, answer.department);
-            viewDepartments();
+                choices: function () {
+                    var choiceArray = [];
+                    for (var i = 0; i < deptList.length; i++) {
+                        var department = deptList[i];
+                        choiceArray.push(department.getName());
+                    }
+                    return choiceArray;
+                }
+            }
+        ])
+        .then( function (answer) {
+            var dept = getDepartment(answer.department, deptList);
+            console.log("detartment selected: " + dept.getId());
+            var role = new Role("", answer.newRoleName, answer.salary, dept);
+            employeeData.createRoleInDB(role);
             start();
+            //console.log("creatin new role");
         });
 }
 
 function getDepartmentList() {
-    var departments = ["IT", "Sales", "Marketing", "Engineering"];
+    var departments = employeeData.getDeptListFromDB();
     return departments;
 }
 
-function addDepartmentInDB(roleName, salary, department) {
-
+function getDepartment(name, deptList) {
+    var department = null;
+    deptList.forEach((element, i) => {
+        var nameI = element.getName();
+        if (nameI === name) {
+            department = element;
+            //console.log("detartment returned: " + department.getName() + " id: " + department.getId());
+            return;
+        }
+    });
+    return department;
 }
 
 function addEmployees() {
@@ -255,6 +273,3 @@ function updateEmployeeRoles() {
 }
 
 function updateEmployeeRoleInDB(employee, role) { }
-
-
-console.log("EOF")
