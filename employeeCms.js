@@ -2,6 +2,7 @@ var employeeData = require("./data/employeeData");
 const Department = require("./pojo/Department");
 const Employee = require("./pojo/Employee");
 const Role = require("./pojo/Role");
+var appsUtil = require("./util/appsUtil");
 
 var inquirer = require("inquirer");
 
@@ -55,7 +56,7 @@ function start() {
         });
 }
 
-async function addRecords() {
+function addRecords() {
     inquirer
         .prompt({
             name: "addRecords",
@@ -126,7 +127,7 @@ function createNewRole() {
                 }
             }
         ])
-        .then( function (answer) {
+        .then(function (answer) {
             var dept = getDepartment(answer.department, deptList);
             console.log("detartment selected: " + dept.getId());
             var role = new Role("", answer.newRoleName, answer.salary, dept);
@@ -155,8 +156,9 @@ function getDepartment(name, deptList) {
 }
 
 function addEmployees() {
+    var roleList = getRoleList();
     inquirer
-        .prompt(
+        .prompt([
             {
                 name: "name",
                 type: "input",
@@ -171,45 +173,110 @@ function addEmployees() {
                 name: "role",
                 type: "list",
                 message: "Which of the below roles would like to assign for this employee?",
-                choices: getRoleList()
-            })
+                choices: function () {
+                    var choiceArray = [];
+                    for (var i = 0; i < roleList.length; i++) {
+                        var role = roleList[i];
+                        choiceArray.push(role.getTitle());
+                    }
+                    return choiceArray;
+                }
+            }
+        ])
         .then(function (answer) {
-            var name = answer.name;
-            var lastName = answer.lastName;
-            var role = answer.role;
-            createEmployeeInDB(roleName, salary, department);
-            shouldAssignManager();
+            var role = getRole(answer.role, roleList);
+            console.log("Role selected: " + role.getTitle());
+            var employee = new Employee("", answer.name, answer.lastName, role, null);
+            //employee constructor(id, name, lastName, role, manager)
+            shouldAssignManager(employee, role);
         });
 }
 
-function createEmployeeInDB(roleName, salary, department) {
-
+function getRoleList() {
+    var roles = employeeData.getRolesListFromDB();
+    return roles;
 }
 
-function shouldAssignManager(employeeId) {
-    inquirer
-        .prompt({
-            name: "managerYesNo",
+function getRole(title, roleList) {
+    var role = null;
+    roleList.forEach((element, i) => {
+        var titleI = element.getTitle();
+        if (titleI === title) {
+            role = element;
+            //console.log("Role returned: " + role.getTitle() + " id: " + role.getId());
+            return;
+        }
+    });
+    return role;
+}
+
+function shouldAssignManager(employee, role) {
+    inquirer.prompt([
+        {
             type: "list",
+            name: "assignMgr",
             message: "Would you like to assign a manager for this employee?",
-            choices: ["YES", "NO"]
+            choices: [
+                "Yes",
+                "No"
+            ]
+        }
+    ]).then(function (answer) {
+        if (answer.assignMgr === "Yes") {
+            assignManager(employee, role);
+        } else {
+            employeeData.createEmployeeInDB(employee, role);
+            start();
+        }
+    });
+}
+
+function assignManager(employee, role) {
+    var employeeList = getEmployeeList().then(function () {
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "manager",
+                message: "Select the employee you would like to assign as the manager for " + employee.getName(),
+                choices: function () {
+                    var choiceArray = [];
+                    for (var i = 0; i < employeeList.length; i++) {
+                        var employee = employeeList[i];
+                        choiceArray.push(employee.getId() + " " + employee.getName() + " " + employee.getLastName());
+                    }
+                    return choiceArray;
+                }
+            }
+        ]).then(function (answer) {
+            var manager = getManager(answer.manager, employeeList);
+            console.log("Manager selected: " + answer.manager);
+            employee.setManager(manager);
+            employeeData.createEmployeeInDB(employee, role);
+            start();
         })
-        .then(function (answer) {
-            // based on their answer, either call the bid or the post functions
-            if (answer.managerYesNo === "YES") {
-                assignManagerInDB(employeeId);
-                viewEmployees();
-                start();
-            }
-            else {
-                start();
-            }
-        });
+    });
 }
 
-function assignManagerInDB(employeeId) {
-
+function getEmployeeList() {
+    var employees = employeeData.getEmployeeListFromDB();
+    console.log("Employee List size: " + employees.length);
+    return employees;
 }
+
+function getManager(managerString, employeeList) {
+    var manager = null;
+    var managerId = appsUtil.retrieveToken(managerString, 1);
+    roleList.forEach((element, i) => {
+        var managerIdI = element.getId();
+        if (managerIdI === managerId) {
+            manager = element;
+            //console.log("Manager selected: " + manager.getName() + " id: " + manager.getId());
+            return;
+        }
+    });
+    return manager;
+}
+
 
 function viewRecords() {
     inquirer

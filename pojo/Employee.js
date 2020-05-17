@@ -30,6 +30,10 @@ class Employee {
     getManager() {
         return this.manager;
     }
+
+    setManager(manager) {
+        this.manager = manager;
+    }
 }
 
 module.exports = Employee;
