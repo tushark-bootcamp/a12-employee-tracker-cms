@@ -308,6 +308,7 @@ function viewDepartments() {
             }
             tableArr.push(deptRow);
         }
+        console.log("\n");
         console.table(tableArr);
     });
 }
