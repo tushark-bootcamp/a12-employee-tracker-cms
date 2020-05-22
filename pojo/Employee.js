@@ -34,6 +34,10 @@ class Employee {
     setManager(manager) {
         this.manager = manager;
     }
+
+    setRole(role) {
+        this.role = role;
+    }
 }
 
 module.exports = Employee;

@@ -56,9 +56,27 @@ var createRoleInDB = (role) => {
     },
     function (err) {
       if (err) throw err;
-      console.log("Role " + role.getTitle() + " was created successfully!");
     }
   );
+  console.log("Role " + role.getTitle() + " was created successfully!");
+}
+
+var updateEmployeeRoleInDB = (employee) => {
+  connection.query(
+    "Update employee SET ? where ?",
+    [
+      {
+        role_id: employee.getRole().getId()
+      },
+      {
+        id: employee.getId()
+      }
+    ],
+    function (err) {
+      if (err) throw err;
+    }
+  );
+  console.log("Employee " + employee.getName() + "'s role updated to: " + employee.getRole().getTitle());
 }
 
 var getRolesListQuery = () => {
@@ -177,6 +195,7 @@ module.exports = {
   getEmployeeList: getEmployeeList,
   createEmployeeInDB: createEmployeeInDB,
   assignManagerInDB: assignManagerInDB,
+  updateEmployeeRoleInDB: updateEmployeeRoleInDB,
   getConnection: getConnection,
   exit: exit
 }

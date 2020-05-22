@@ -20,10 +20,6 @@ function start() {
                 "Add department, roles or employees",
                 "View departments, roles or employees",
                 "Update employee roles",
-                "Update employee managers",
-                "View employees by managers",
-                "Delete departments roles and employees",
-                "View total utilised budget of department",
                 "Exit"
             ]
         })
@@ -37,18 +33,6 @@ function start() {
             }
             else if (answer.initAction === "Update employee roles") {
                 updateEmployeeRoles();
-            }
-            else if (answer.initAction === "Update employee managers") {
-                updateEmployeeManagers();
-            }
-            else if (answer.initAction === "View employees by managers") {
-                viewEmployeeByManagers();
-            }
-            else if (answer.initAction === "Delete departments roles and employees") {
-                deleteDeptRolesEmps();
-            }
-            else if (answer.initAction === "View total utilised budget of department") {
-                viewDeptBudget();
             }
             else {
                 employeeData.exit();
@@ -249,32 +233,32 @@ function assignManager(employeeInstnce, roleInstance) {
             }
         ]).then(function (answer) {
             //console.log("Manager selected: " + answer.manager);
-            var manager = getManager(answer.manager, employeeList);
+            var manager = getEmployee(answer.manager, employeeList);
             //console.log("Manager picked: " + manager.getName() + " " + manager.getLastName());
             employeeInstnce.setManager(manager);
             employeeData.createEmployeeInDB(employeeInstnce, roleInstance);
             start();
-        })
-    })
+        });
+    });
 
 }
 
-function getManager(managerString, employeeList) {
-    var manager = null;
-    //console.log("managerString: " + managerString);
-    var managerId = parseInt(appsUtil.retrieveToken(managerString, 0));
-    //console.log("managerId: " + managerId);
+function getEmployee(empString, employeeList) {
+    var employee = null;
+    //console.log("empString: " + empString);
+    var empId = parseInt(appsUtil.retrieveToken(empString, 0));
+    //console.log("empId: " + empId);
     employeeList.forEach((element, i) => {
-        var managerIdI = element.getId();
-        //console.log("managerIdI: " + managerIdI);
-        if (managerIdI === managerId) {
-            manager = element;
-            console.log("Manager selected at i: " + manager.getName() + " id: " + manager.getId());
+        var empIdI = element.getId();
+        //console.log("empIdI: " + empIdI);
+        if (empIdI === empId) {
+            employee = element;
+            console.log("Employee selected at i: " + employee.getName() + " id: " + employee.getId());
             return;
         }
     });
     //console.log("Returned manager: " + manager.getName());
-    return manager;
+    return employee;
 }
 
 
@@ -386,26 +370,56 @@ function viewEmployees() {
 }
 
 function updateEmployeeRoles() {
-    inquirer
-        .prompt(
+    var employeeList = [];
+    employeeData.findAllEmployees(function (results) {
+        inquirer.prompt([
             {
+                type: "list",
                 name: "employee",
-                type: "list",
                 message: "Which of the below employee's role would like to update?",
-                choices: getEmployeeList()
-            },
-            {
-                name: "role",
-                type: "list",
-                message: "Which of the below roles would like to assign for this employee?",
-                choices: getRoleList()
-            })
-        .then(function (answer) {
-            var employee = answer.employee;
-            var role = answer.role;
-            updateEmployeeRoleInDB(employee, role);
-            start();
+                choices: function () {
+                    var choiceArray = [];
+                    employeeList = employeeData.getEmployeeList(results);
+                    employeeList.forEach((element, i) => {
+                        var employee = element;
+                        choiceArray.push(employee.getId() + " " + employee.getName() + " " + employee.getLastName());
+                        //console.log("Employee List Length for i: " + employeeList.length);
+                    });
+                    return choiceArray;
+                }
+            }
+        ]).then(function (answer) {
+            //console.log("Employee selected: " + answer.employee);
+            var employee = getEmployee(answer.employee, employeeList);
+            //console.log("Manager picked: " + manager.getName() + " " + manager.getLastName());
+            var roleList = [];
+            employeeData.findAllRoles(function (results) {
+                inquirer
+                    .prompt([
+                        {
+                            name: "role",
+                            type: "list",
+                            message: "Which of the below roles would like to assign for " + employee.getName() + "?",
+                            choices: function () {
+                                var choiceArray = [];
+                                roleList = employeeData.getRolesList(results);
+                                for (var i = 0; i < roleList.length; i++) {
+                                    var role = roleList[i];
+                                    choiceArray.push(role.getTitle());
+                                }
+                                return choiceArray;
+                            }
+                        }
+                    ])
+                    .then(function (answer) {
+                        var role = getRole(answer.role, roleList);
+                        console.log("Role selected: " + role.getTitle());
+                        employee.setRole(role);
+                        //employee constructor(id, name, lastName, role, manager)
+                        employeeData.updateEmployeeRoleInDB(employee);
+                        start();
+                    });
+            });
         });
+    });
 }
-
-function updateEmployeeRoleInDB(employee, role) { }
