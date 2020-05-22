@@ -172,10 +172,6 @@ var createEmployeeInDB = (employee, role) => {
   console.log("Employee " + employee.getName() + " was created successfully!");
 }
 
-var assignManagerInDB = (employeeId, managerId) => {
-
-}
-
 var exit = () => {
   connection.end();
 }
@@ -194,7 +190,6 @@ module.exports = {
   findAllEmployees: findAllEmployees,
   getEmployeeList: getEmployeeList,
   createEmployeeInDB: createEmployeeInDB,
-  assignManagerInDB: assignManagerInDB,
   updateEmployeeRoleInDB: updateEmployeeRoleInDB,
   getConnection: getConnection,
   exit: exit
